@@ -148,6 +148,34 @@ class WSbackUP{
     }
 
    /**
+    * If true a notification mail will be send
+    * @var bool
+    */
+    private $sendMail;
+    
+    public function setSendMail(){
+        ($this->sendMail) ? $this->sendMail = false : $this->sendMail = true;
+    }
+    
+    public function getSendMail(){
+        return $this->sendMail;
+    }
+    
+   /**
+    * E-Mail address who will recieve the notification mail
+    * @var string
+    */
+    private $eMailAddress;
+    
+    public function setMailAddress($eMail){
+        $this->eMailAddress = $eMail;
+    }
+    
+    public function getMailAddress(){
+        return $this->eMailAddress;
+    }
+    
+   /**
     * Initialize settings
     *
     * @param type string $startNode
@@ -165,6 +193,7 @@ class WSbackUP{
         $this->tar = true;
         $this->zip = true;
         $this->keepTAR = false;
+        $this->sendMail = false;
     }
     
    /**
@@ -174,6 +203,7 @@ class WSbackUP{
         if($this->tar) $this->createTAR();
         if($this->zip) $this->createZIP();
         if(!$this->keepTAR) $this->unlinkTAR();
+        if($this->sendMail) $this->sendMail();
     }
 
    /**
@@ -223,6 +253,20 @@ class WSbackUP{
     */
     private function unlinkTAR(){
         unlink($this->fullPath.".tar.gz");
+    }
+    
+    /**
+    * Send notification Mail
+    */
+    private function sendMail(){
+        if(isset($this->eMailAddress)){
+			$mailSubject = "[SUCCESSFUL] WSbackUP von ".$_SERVER["SERVER_NAME"]." ".date('d-M-Y');
+			$mailText = "Backup Successful";
+			
+			@mail($this->eMailAddress, $mailSubject, $mailText, "From: ".$_SERVER["SERVER_ADMIN"]);            
+        }else{
+            die("no email adress assigned");
+        }
     }
 }
 ?>
