@@ -261,7 +261,12 @@ class WSbackUP{
     private function sendMail(){
         if(isset($this->eMailAddress)){
 			$mailSubject = "[SUCCESSFUL] WSbackUP von ".$_SERVER["SERVER_NAME"]." ".date('d-M-Y');
-			$mailText = "Backup Successful";
+			$cHead = '<!DOCTYPE html><html><head><meta charset="UTF-8" /><title>'.$mailSubject.'</title><meta name="copyright" content="Copyright &copy; SEMango eSolutions" /><meta name="author" content="Andreas Baimler" /><meta name="generator" content="WSbackUP" /><meta http-equiv="cache-control" content="no-cache" /><meta http-equiv="pragma" content="no-cache" /><meta name="date" content="'.date("Y-m-d:h:s").'2015-09-14T11:10:03+00:00" /></head>';
+			$cBody = '<body style="margin:0;padding:3px;font-family:monospace;font-size:12px;line-height:15px;background-color:#000;color:#fff;white-space:nowrap;">';
+			$cContent = 'Backup Successful';
+			$cFooter = '</body></html>';
+			
+			$mailText = $cHead.$cBody.$cContent.$cFooter;
 			
 			@mail($this->eMailAddress, $mailSubject, $mailText, "From: ".$_SERVER["SERVER_ADMIN"]);            
         }else{
