@@ -77,8 +77,14 @@ class WSbackUP{
     */
     private $ignore;
     
-    public function setIgnore($ignore){
-        $this->ignore = $ignore;
+    public function addIgnore($ignore){
+        $this->ignore[] = $ignore;
+    }
+	
+    public function removeIgnore($ignore){
+        if(($key = array_search($ignore, $this->ignore)) !== false) {
+	    unset($this->ignore[$key]);
+	}
     }
     
     public function getIgnore(){
