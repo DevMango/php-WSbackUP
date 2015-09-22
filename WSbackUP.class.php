@@ -2,7 +2,7 @@
 /**
  * WSbackUP base class
  *
- * @version 1.0.0
+ * @version 1.0.3
  * @package WSbackUP
  * @author Andreas Baimler (WSbackUP@semango.de)
  * @copyright (C) 2015 SEMango eSolutions (http://www.semango.de)
@@ -147,6 +147,20 @@ class WSbackUP{
         return $this->keepTAR;
     }
 
+    /**
+    * amount of backup fiiles which should be keeped
+    * @var int
+    */
+    private $amBackFiles;
+    
+    public function setAmBackFiles($amountFiles){
+        $this->amBackFiles = $amountFiles;
+    }
+    
+    public function getAmBackFiles(){
+        return $this->amBackFiles;
+    }
+    
    /**
     * If true a notification mail will be send
     * @var bool
@@ -193,6 +207,7 @@ class WSbackUP{
         $this->tar = true;
         $this->zip = true;
         $this->keepTAR = false;
+        $this->amBackFiles = 3;
         $this->sendMail = false;
     }
     
@@ -203,6 +218,7 @@ class WSbackUP{
         if($this->tar) $this->createTAR();
         if($this->zip) $this->createZIP();
         if(!$this->keepTAR) $this->unlinkTAR();
+        if($this->amBackFiles != 0) $this->clean();
         if($this->sendMail) $this->sendMail();
     }
 
@@ -253,6 +269,21 @@ class WSbackUP{
     */
     private function unlinkTAR(){
         unlink($this->fullPath.".tar.gz");
+    }
+    	
+    /**
+    * Deletes backup files if there are more then the size of $amBackFiles
+    */
+    private function clean(){
+        $backFiles = scandir($this->destination);
+		$backFiles = array_reverse($backFiles);
+		array_pop($backFiles);
+		array_pop($backFiles);
+		
+		while(sizeof($backFiles) > $this->amBackFiles){
+			unlink($this->destination.$backFiles[sizeof($backFiles)-1]);
+			array_pop($backFiles);
+		}
     }
     
     /**
