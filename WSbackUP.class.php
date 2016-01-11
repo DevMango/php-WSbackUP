@@ -2,7 +2,7 @@
 /**
  * WSbackUP base class
  *
- * @version 1.0.3
+ * @version 1.0.4
  * @package WSbackUP
  * @author Andreas Baimler (WSbackUP@semango.de)
  * @copyright (C) 2015 SEMango eSolutions (http://www.semango.de)
@@ -10,6 +10,12 @@
  * @see https://github.com/DevMango/php-WSbackUP
  */
 class WSbackUP{
+
+	/**
+    * Message which will be sent
+    * @var string
+    */
+  	private $msg;
 
    /**
     * Node where backup should start
@@ -80,15 +86,15 @@ class WSbackUP{
     public function addIgnore(){
         $args = func_get_args();
 
-	foreach($args as $arg){
-	    $this->ignore[] = $arg;
-	}
+		foreach($args as $arg){
+			$this->ignore[] = $arg;
+		}
     }
 	
     public function removeIgnore($ignore){
         if(($key = array_search($ignore, $this->ignore)) !== false) {
-	    unset($this->ignore[$key]);
-	}
+			unset($this->ignore[$key]);
+		}
     }
     
     public function getIgnore(){
@@ -212,12 +218,12 @@ class WSbackUP{
         $this->destination = realpath($storePath);
         $this->fName = date('Y-m-d_His-').$fileName;
         $this->tarPath = "/libs/tar.php";
-        $this->ignore = array("*.gz", "*.tar", "usage", "logs");
+        $this->ignore = array("*.gz", "*.tar", "usage", "logs", "WSbackUP");
         $this->fullPath = $storePath.$this->fName;
         $this->tar = true;
         $this->zip = true;
         $this->keepTAR = false;
-        $this->amBackFiles = 3;
+        $this->amBackFiles = 4;
         $this->sendMail = false;
     }
     
@@ -241,6 +247,7 @@ class WSbackUP{
         $archiv = new Archive_Tar($this->fullPath.".tar.gz", true);
         $archiv->setIgnoreList($this->ignore);
         $this->archiveTAR = $archiv->createModify($this->source, "", preg_replace('/(\/www\/htdocs\/\w+\/).*/', '$1', $this->destination));
+        $this->msg .= "TAR-File created"."<br>";
     }
     
    /**
@@ -269,6 +276,8 @@ class WSbackUP{
                         $zip->addFromString(basename($this->fullPath.".tar.gz"), file_get_contents($this->fullPath.".tar.gz"));
                     }
                 }
+                $this->msg .= "ZIP-File created"."<br>";
+                
                 return $zip->close();
             }
         }
@@ -279,6 +288,7 @@ class WSbackUP{
     */
     private function unlinkTAR(){
         unlink($this->fullPath.".tar.gz");
+        $this->msg .= "TAR-File unlinked"."<br>";
     }
     	
     /**
@@ -291,7 +301,8 @@ class WSbackUP{
 		array_pop($backFiles);
 		
 		while(sizeof($backFiles) > $this->amBackFiles){
-			unlink($this->destination.$backFiles[sizeof($backFiles)-1]);
+			unlink($this->destination."/".$backFiles[sizeof($backFiles)-1]);
+			$this->msg .= $this->destination."/".$backFiles[sizeof($backFiles)-1]." unlinked"."<br>";
 			array_pop($backFiles);
 		}
     }
@@ -309,7 +320,7 @@ class WSbackUP{
 		$mailSubject = "[SUCCESSFUL] WSbackUP von ".$_SERVER["SERVER_NAME"]." ".date('d-M-Y');
 		$cHead = '<!DOCTYPE html><html><head><meta charset="UTF-8" /><title>'.$mailSubject.'</title><meta name="copyright" content="Copyright &copy; SEMango eSolutions" /><meta name="author" content="Andreas Baimler" /><meta name="generator" content="WSbackUP" /><meta http-equiv="cache-control" content="no-cache" /><meta http-equiv="pragma" content="no-cache" /><meta name="date" content="'.date("Y-m-d:h:s").'2015-09-14T11:10:03+00:00" /></head>';
 		$cBody = '<body style="margin:0;padding:3px;font-family:monospace;font-size:12px;line-height:15px;background-color:#000;color:#fff;white-space:nowrap;">';
-		$cContent = 'Backup Successful';
+		$cContent = $this->msg.'<br>Backup Successful';
 		$cFooter = '</body></html>';
 		
 		$mailText = $cHead.$cBody.$cContent.$cFooter;
